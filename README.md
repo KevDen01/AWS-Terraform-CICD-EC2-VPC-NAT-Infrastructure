@@ -133,8 +133,8 @@ Store the key files (`key-ec2-public.pem`, `key-ec2-private.pem`) safely, as you
 Clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/yourusername/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/KevDen01/aws-terraform-ec2-vpc-nat-infrastructure
+cd aws-terraform-ec2-vpc-nat-infrastructure
 ```
 
 ### 2. **Configure Terraform Variables**
