@@ -1,0 +1,19 @@
+# Ignore Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Ignore the .terraform directory, which stores provider plugins and modules
+.terraform/
+
+# Ignore Terraform plan files
+*.plan
+
+# Ignore lock file for providers (you may want to keep this in some cases, but it's commonly ignored in many workflows)
+.terraform.lock.hcl
+
+# Ignore crash logs
+crash.log
+
+# Ignore any IDE or editor-specific files (optional, based on your setup)
+.idea/
+.vscode/
