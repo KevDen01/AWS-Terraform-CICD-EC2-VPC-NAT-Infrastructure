@@ -196,13 +196,20 @@ This setup ensures that the private EC2 instances can reach the internet for upd
 To connect to the **public EC2 instance** using SSH, use the following command, replacing the `<public-ip>` with the actual public IP of the instance:
 
 ```bash
-ssh -i key-ec2-public.pem ec2-user@<public-ip>
+ssh -i key-ec2-public.pem ubuntu@<public-ip>
 ```
 
 You can find the **public IP** of the EC2 instance in the **AWS Console** or retrieve it by running the following command to output it:
 
 ```bash
 terraform output ec2_public_instance_public_ip
+```
+### **Uploading the Private EC2 Instance's Private Key to the Public EC2 Instance**
+
+Assuming you're in the directory where `<key-ec2-private.pem>` is located, use this command to upload it to the **public EC2 instance** using SCP, replacing the `<public-ip>` with the actual public IP of the instance:
+
+```bash
+scp -i key-ec2-public.pem key-ec2-private.pem ubuntu@<public-ip-of-public-instance>:/home/ubuntu/
 ```
 
 ### **Connecting to the Private EC2 Instance**
@@ -215,13 +222,13 @@ The **private EC2 instance** will **not** have a public IP address, but you can 
 2. From the public instance, SSH into the private instance using its private IP.
 
 ```bash
-ssh -i key-ec2-public.pem ec2-user@<public-ip>  # SSH into the public EC2
+ssh -i key-ec2-public.pem ubuntu@<public-ip>  # SSH into the public EC2
 ```
 
 Once connected to the public EC2 instance, SSH into the private instance (use the private IP):
 
 ```bash
-ssh -i key-ec2-private.pem ec2-user@<private-ip>
+ssh -i key-ec2-private.pem ubuntu@<private-ip>
 ```
 
 You can find the **private IP** of the EC2 instance by running:
