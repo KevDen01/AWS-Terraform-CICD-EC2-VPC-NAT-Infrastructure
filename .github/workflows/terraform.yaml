@@ -11,7 +11,7 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    
+
     defaults:
       run:
         working-directory: src
@@ -33,7 +33,7 @@ jobs:
       # Step 3: Create S3 Bucket for Terraform State
       - name: Create S3 Bucket for Terraform State
         run: |
-          BUCKET_NAME=my-terraform-state-bucket20011992-${{ github.run_id }}
+          BUCKET_NAME=my-terraform-state-bucket-${{ github.run_id }}
           aws s3api create-bucket --bucket $BUCKET_NAME --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
           echo "bucket_name=$BUCKET_NAME" >> $GITHUB_ENV
 
@@ -63,6 +63,21 @@ jobs:
 
           echo "private_key_name=key-ec2-private.pem" >> $GITHUB_ENV
           echo "public_key_name=key-ec2-public.pem" >> $GITHUB_ENV
+
+      - name: Generate Backend Configuration
+        run: |
+          cat <<EOF > backend.tf
+          terraform {
+            backend "s3" {
+              bucket         = "$bucket_name"
+              key            = "terraform/state.tfstate"
+              region         = "us-west-2"
+              encrypt        = true
+              dynamodb_table = "$dynamodb_table"
+              acl            = "bucket-owner-full-control"
+            }
+          }
+          EOF
 
       # Step 6: Set up Terraform
       - name: Setup Terraform
