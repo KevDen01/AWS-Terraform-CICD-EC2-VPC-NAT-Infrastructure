@@ -70,7 +70,22 @@ jobs:
           echo "private_key_name=key-ec2-private-$RUN_ID" >> $GITHUB_ENV
           echo "public_key_name=key-ec2-public-$RUN_ID" >> $GITHUB_ENV
 
-      # Step 6: Generate Updated Backend
+      # Step 6: Update run_id in terraform.tfvars
+      - name: Update run_id in terraform.tfvars
+        run: |
+          RUN_ID=${{ github.run_id }}
+          # Check if the file exists and already has run_id
+          if grep -q "^run_id" terraform.tfvars; then
+            # Replace the run_id line
+            sed -i '' "s/^run_id.*/run_id = \"$RUN_ID\"/" terraform.tfvars
+          else
+            # Append the run_id line if it doesn't exist
+            echo "run_id = \"$RUN_ID\"" >> terraform.tfvars
+          fi
+          echo "Terraform variable 'run_id' set to '$RUN_ID'"
+
+
+      # Step 7: Generate Updated Backend
       - name: Generate Backend Configuration
         run: |
           cat <<EOF > backend.tf
@@ -86,26 +101,26 @@ jobs:
           }
           EOF
 
-      # Step 7: Set up Terraform
+      # Step 8: Set up Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
 
-      # Step 8: Initialize Terraform
+      # Step 9: Initialize Terraform
       - name: Terraform Init
         run: terraform init
 
-      # Step 9: Terraform Plan
+      # Step 10: Terraform Plan
       - name: Terraform Plan
         run: terraform plan
 
-      # Step 10: Terraform Apply
+      # Step 11: Terraform Apply
       - name: Terraform Apply
         if: github.event_name == 'push'
         run: terraform apply -auto-approve
 
-      # Step 11: Terraform Destroy
-      # Step 12: Destroy S3 Bucket
-      # Step 13: Destroy DynamoDB Table
-      # Step 14: Destroy Key Pairs
+      # Step 12: Terraform Destroy
+      # Step 13: Destroy S3 Bucket
+      # Step 14: Destroy DynamoDB Table
+      # Step 15: Destroy Key Pairs
