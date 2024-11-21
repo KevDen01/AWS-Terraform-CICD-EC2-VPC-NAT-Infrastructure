@@ -11,6 +11,10 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: src
 
     steps:
       # Step 1: Checkout the repository
