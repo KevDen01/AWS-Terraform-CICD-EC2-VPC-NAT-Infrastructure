@@ -15,7 +15,7 @@
 crash.log
 
 # Ignore .pem key files
-.pem
+*.pem
 
 # Ignore any IDE or editor-specific files (optional, based on your setup)
 .idea/
