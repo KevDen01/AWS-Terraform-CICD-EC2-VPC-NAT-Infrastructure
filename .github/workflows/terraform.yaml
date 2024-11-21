@@ -1,0 +1,42 @@
+name: "Terraform"
+
+on:   # This workflow will run on push (trigger)
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+
+    env: #aws credentials
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Set environment variables in the github repo
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+
+    defaults:
+      run:
+        working-directory: src
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3 # Copy/clone repo into remote git server (Actions)
+
+      - name: Setup Terraform # Install Terraform in the ubuntu server
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.1
+          terraform_wrapper: false # wrapper script: extra functionality (logging, validation, adjustments)
+
+      - name: Terraform Init # Download backend, modules, plugins
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      #- name: Terraform Destroy
+       # run: terraform destroy -auto-approve
