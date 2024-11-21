@@ -33,3 +33,7 @@ output "ec2_public_instance_public_ip" {
 output "ec2_private_instance_private_ip" {
   value = module.ec2_private.private_ip
 }
+
+output "github_run_id" {
+  value = var.run_id
+} 
