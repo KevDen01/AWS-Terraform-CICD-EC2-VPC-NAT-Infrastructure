@@ -56,9 +56,9 @@ jobs:
           chmod 400 key-ec2-private.pem
           echo "Private key 'key-ec2-private.pem' created."
 
-          # Create public key (placeholder, as AWS doesn't generate it by default)
-          # You might replace this with your actual public key generation logic
-          ssh-keygen -y -f key-ec2-private.pem > key-ec2-public.pem
+          # Create public key
+          aws ec2 create-key-pair --key-name key-ec2-public --query 'KeyMaterial' --output text > key-ec2-public.pem
+          chmod 400 key-ec2-public.pem
           echo "Public key 'key-ec2-public.pem' created."
 
           echo "private_key_name=key-ec2-private.pem" >> $GITHUB_ENV
