@@ -3,7 +3,7 @@
 
 terraform {
   backend "s3" {
-    bucket         = "kevink-terraform-gitactions"  # Name of your S3 bucket
+    bucket         = "my-terraform-state-bucket20011992"  # Name of your S3 bucket
     key            = "terraform/state.tfstate"    # Path where the state file will be stored in the S3 bucket
     region         = "us-west-2"                   # The region of your resources
     encrypt        = true                          # Enable encryption for the state file
