@@ -116,11 +116,36 @@ jobs:
         run: terraform plan
 
       # Step 11: Terraform Apply
-      - name: Terraform Apply
-        if: github.event_name == 'push'
-        run: terraform apply -auto-approve
+      #- name: Terraform Apply
+        #if: github.event_name == 'push'
+        #run: terraform apply -auto-approve
 
       # Step 12: Terraform Destroy
-      # Step 13: Destroy S3 Bucket
-      # Step 14: Destroy DynamoDB Table
-      # Step 15: Destroy Key Pairs
+      - name: Terraform Destroy
+        run: terraform destroy --auto-approve
+
+      # Step 13: Empty and Delete S3 Bucket
+      - name: Empty and Delete S3 Bucket
+        run: |
+          BUCKET_NAME=my-terraform-state-bucket-${{ github.run_id }}
+          echo "Emptying S3 bucket: $BUCKET_NAME..."
+          aws s3 rm s3://$BUCKET_NAME --recursive
+          echo "Deleting S3 bucket: $BUCKET_NAME..."
+          aws s3api delete-bucket --bucket $BUCKET_NAME --region us-west-2
+
+      # Step 14: Delete DynamoDB Table
+      - name: Delete DynamoDB Table
+        run: |
+          TABLE_NAME=my-terraform-lock-table-${{ github.run_id }}
+          echo "Deleting DynamoDB table: $TABLE_NAME..."
+          aws dynamodb delete-table --table-name $TABLE_NAME --region us-west-2
+
+      # Step 15: Delete EC2 Key Pairs
+      - name: Delete EC2 Key Pairs
+        run: |
+          RUN_ID=${{ github.run_id }}
+          echo "Deleting key pair: key-ec2-private-$RUN_ID..."
+          aws ec2 delete-key-pair --key-name key-ec2-private-$RUN_ID
+          echo "Deleting key pair: key-ec2-public-$RUN_ID..."
+          aws ec2 delete-key-pair --key-name key-ec2-public-$RUN_ID
+
