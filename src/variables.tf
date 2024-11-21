@@ -34,6 +34,11 @@ variable "key_name_prefix" {
   default     = "key-ec2-"
 }
 
+variable "run_id" {
+  description = "Unique ID for the GitHub run to ensure key names are unique"
+  type        = string
+}
+
 
 variable "instance_name" {
   description = "Name tag for the EC2 instance"

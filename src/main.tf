@@ -36,7 +36,7 @@ module "ec2_public" {
   instance_type     = var.ec2_instance_type
   ami_id            = var.ec2_ami_id
   security_group_id = module.security_group_public.sg_id
-  key_name          = "${var.key_name_prefix}public"
+  key_name          = "${var.key_name_prefix}public-${var.run_id}"
   instance_name     = var.instance_name["public"]
   associate_public_ip_address = true
 }
@@ -48,7 +48,7 @@ module "ec2_private" {
   instance_type     = var.ec2_instance_type
   ami_id            = var.ec2_ami_id
   security_group_id = module.security_group_private.sg_id
-  key_name          = "${var.key_name_prefix}private"
+  key_name          = "${var.key_name_prefix}private-${var.run_id}"
   instance_name     = var.instance_name["private"]
   associate_public_ip_address = false
 }

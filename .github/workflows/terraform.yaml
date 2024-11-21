@@ -51,19 +51,26 @@ jobs:
       # Step 5: Create EC2 Key Pairs
       - name: Create EC2 Key Pair
         run: |
+          # Use the GitHub run ID for unique naming
+          RUN_ID=${{ github.run_id }}
+
           # Create private key
-          aws ec2 create-key-pair --key-name key-ec2-private --query 'KeyMaterial' --output text > key-ec2-private.pem
-          chmod 400 key-ec2-private.pem
-          echo "Private key 'key-ec2-private.pem' created."
+          PRIVATE_KEY_NAME="key-ec2-private-$RUN_ID.pem"
+          aws ec2 create-key-pair --key-name key-ec2-private-$RUN_ID --query 'KeyMaterial' --output text > $PRIVATE_KEY_NAME
+          chmod 400 $PRIVATE_KEY_NAME
+          echo "Private key '$PRIVATE_KEY_NAME' created."
 
           # Create public key
-          aws ec2 create-key-pair --key-name key-ec2-public --query 'KeyMaterial' --output text > key-ec2-public.pem
-          chmod 400 key-ec2-public.pem
-          echo "Public key 'key-ec2-public.pem' created."
+          PUBLIC_KEY_NAME="key-ec2-public-$RUN_ID.pem"
+          aws ec2 create-key-pair --key-name key-ec2-public-$RUN_ID --query 'KeyMaterial' --output text > $PUBLIC_KEY_NAME
+          chmod 400 $PUBLIC_KEY_NAME
+          echo "Public key '$PUBLIC_KEY_NAME' created."
 
-          echo "private_key_name=key-ec2-private.pem" >> $GITHUB_ENV
-          echo "public_key_name=key-ec2-public.pem" >> $GITHUB_ENV
+          # Export the names for Terraform
+          echo "private_key_name=key-ec2-private-$RUN_ID" >> $GITHUB_ENV
+          echo "public_key_name=key-ec2-public-$RUN_ID" >> $GITHUB_ENV
 
+      # Step 6: Generate Updated Backend
       - name: Generate Backend Configuration
         run: |
           cat <<EOF > backend.tf
@@ -79,21 +86,26 @@ jobs:
           }
           EOF
 
-      # Step 6: Set up Terraform
+      # Step 7: Set up Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
 
-      # Step 7: Initialize Terraform
+      # Step 8: Initialize Terraform
       - name: Terraform Init
         run: terraform init
 
-      # Step 8: Terraform Plan
+      # Step 9: Terraform Plan
       - name: Terraform Plan
         run: terraform plan
 
-      # Step 9: Terraform Apply
+      # Step 10: Terraform Apply
       - name: Terraform Apply
         if: github.event_name == 'push'
         run: terraform apply -auto-approve
+
+      # Step 11: Terraform Destroy
+      # Step 12: Destroy S3 Bucket
+      # Step 13: Destroy DynamoDB Table
+      # Step 14: Destroy Key Pairs
