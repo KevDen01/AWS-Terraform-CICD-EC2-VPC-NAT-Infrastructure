@@ -34,10 +34,11 @@ variable "key_name_prefix" {
   default     = "key-ec2-"
 }
 
-variable "run_id" {
-  description = "Unique ID for the GitHub run to ensure key names are unique"
+variable "s3_bucket_name" {
+  description = "Name of the S3 bucket for Terraform backend"
   type        = string
 }
+
 
 
 variable "instance_name" {

@@ -34,6 +34,6 @@ output "ec2_private_instance_private_ip" {
   value = module.ec2_private.private_ip
 }
 
-output "github_run_id" {
-  value = var.run_id
-} 
+output "s3_bucket_name" {
+  value = var.s3_bucket_name
+}
