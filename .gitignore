@@ -20,6 +20,9 @@ crash.log
 # Ignore old Readme versions
 README2.md
 
+# Ignore .DS_Store
+.DS_Store
+
 # Ignore any IDE or editor-specific files (optional, based on your setup)
 .idea/
 .vscode/
