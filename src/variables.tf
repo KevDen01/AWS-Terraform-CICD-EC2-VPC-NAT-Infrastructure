@@ -39,6 +39,10 @@ variable "s3_bucket_name" {
   type        = string
 }
 
+variable "dynamodb_table_name" {
+  description = "Name of the DynamoDB Table for State Locking"
+  type = string
+}
 
 
 variable "instance_name" {
