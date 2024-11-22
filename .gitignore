@@ -15,7 +15,7 @@
 crash.log
 
 # Ignore .pem key files
-*.pem
+# *.pem
 
 # Ignore old Readme versions
 README2.md
