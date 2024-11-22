@@ -1,6 +1,8 @@
-# AWS Terraform EC2 VPC NAT Infrastructure with CI/CD Pipeline
+# AWS Terraform EC2 VPC NAT with CI/CD Pipeline
 
-This project uses Terraform to provision an AWS infrastructure that includes EC2 instances, a VPC, NAT gateways, and related resources. This CI/CD pipeline is configured using GitHub Actions to automate the deployment and destruction of infrastructure.
+This project provisions an AWS infrastructure, including a VPC, EC2 instances, NAT gateways, and supporting resources, using Terraform. It integrates a CI/CD pipeline implemented with GitHub Actions for automated deployment, management, and cleanup of the infrastructure. The pipeline dynamically handles resource creation and reuses existing infrastructure.
+
+---
 
 ## Features
 
@@ -10,8 +12,9 @@ This project uses Terraform to provision an AWS infrastructure that includes EC2
   - S3 bucket for Terraform state
   - DynamoDB table for state locking
   - EC2 key pairs for secure SSH access
+- Checks if resources already exist to avoid duplication.
+- Dynamically retrieves the S3 bucket name from AWS SSM Parameter Store for consistent state management.
 - Supports automated cleanup of all resources.
-- Dynamic naming based on the GitHub `run_id` for each pipeline execution.
 
 ---
 
@@ -51,8 +54,7 @@ This project uses Terraform to provision an AWS infrastructure that includes EC2
 │   ├── main.tf                 # Main Terraform configuration
 │   ├── variables.tf            # Variable definitions
 │   ├── outputs.tf              # Output definitions
-│   ├── backend.tf              # S3 and DynamoDB backend configuration
-│   ├── terraform.tfvars        # Variables file for runtime configuration
+│   ├── backend.tf              # Dynamically updated backend configuration
 │   └── modules/                # Reusable Terraform modules
 └── README.md                   # Project documentation
 ```
@@ -64,16 +66,23 @@ This project uses Terraform to provision an AWS infrastructure that includes EC2
 The GitHub Actions pipeline automates the following tasks:
 
 1. **Apply**:
+   - Checks if the S3 bucket, DynamoDB table, and EC2 key pairs exist.
+   - Creates the S3 bucket for Terraform state if it doesn’t exist and stores the name in AWS SSM Parameter Store.
+   - Dynamically generates the `backend.tf` file to ensure consistent backend configuration.
    - Initializes Terraform and applies the configuration to deploy resources.
 2. **Destroy**:
-   - Destroys all Terraform-managed resources.
-   - Deletes additional resources not managed by Terraform (e.g., S3 bucket, DynamoDB table, and key pairs).
+   - Cleans up resources by:
+     - Destroying all Terraform-managed infrastructure.
+     - Emptying and deleting the S3 bucket.
+     - Deleting the DynamoDB table and EC2 key pairs.
+
+---
 
 ### Commenting/Uncommenting Steps for Apply/Destroy
 
 The pipeline is configured with steps for both `apply` and `destroy`. By default:
-- `Apply` steps are enabled.
-- `Destroy` steps are **commented out** to prevent accidental deletion of resources.
+- **Apply** steps are enabled.
+- **Destroy** steps are **commented out** to prevent accidental deletion of resources.
 
 To **apply** the configuration:
 1. Leave the `apply` steps uncommented.
@@ -85,46 +94,46 @@ To **destroy** the infrastructure:
    ```yaml
    # Step 12: Terraform Destroy
    - name: Terraform Destroy
+     working-directory: src
      run: terraform destroy --auto-approve
 
    # Step 13: Empty and Delete S3 Bucket
    - name: Empty and Delete S3 Bucket
      run: |
-       RUN_ID=${{ github.run_id }}
-       BUCKET_NAME="my-terraform-state-bucket-$RUN_ID"
+       BUCKET_NAME=$(aws ssm get-parameter --name /my-terraform/s3-bucket-name --query 'Parameter.Value' --output text)
+       echo "Emptying S3 bucket: $BUCKET_NAME..."
        aws s3 rm s3://$BUCKET_NAME --recursive
+       echo "Deleting S3 bucket: $BUCKET_NAME..."
        aws s3api delete-bucket --bucket $BUCKET_NAME --region us-west-2
 
    # Step 14: Delete DynamoDB Table
    - name: Delete DynamoDB Table
      run: |
-       RUN_ID=${{ github.run_id }}
-       TABLE_NAME="my-terraform-lock-table-$RUN_ID"
+       TABLE_NAME="my-terraform-lock-table"
+       echo "Deleting DynamoDB table: $TABLE_NAME..."
        aws dynamodb delete-table --table-name $TABLE_NAME --region us-west-2
 
    # Step 15: Delete EC2 Key Pairs
    - name: Delete EC2 Key Pairs
      run: |
-       RUN_ID=${{ github.run_id }}
-       aws ec2 delete-key-pair --key-name key-ec2-private-$RUN_ID
-       aws ec2 delete-key-pair --key-name key-ec2-public-$RUN_ID
+       PRIVATE_KEY_NAME="key-ec2-private"
+       PUBLIC_KEY_NAME="key-ec2-public"
+       echo "Deleting key pair: $PRIVATE_KEY_NAME..."
+       aws ec2 delete-key-pair --key-name $PRIVATE_KEY_NAME
+       echo "Deleting key pair: $PUBLIC_KEY_NAME..."
+       aws ec2 delete-key-pair --key-name $PUBLIC_KEY_NAME
    ```
 
 ---
 
 ## How It Works
 
-### Deployment
-
-1. Navigate to the `src` directory:
-   ```bash
-   cd src
-   ```
-2. Update the `terraform.tfvars` file if necessary.
-3. Commit and push changes to the repository.
-4. The pipeline will:
-   - Check if S3 bucket, DynamoDB table, and key pairs already exist.
-   - Create or reuse resources dynamically based on the `run_id`.
+1. **First Run**:
+   - Dynamically creates the S3 bucket with a unique name and stores it in AWS SSM Parameter Store.
+   - Initializes Terraform and applies the configuration.
+2. **Subsequent Runs**:
+   - Retrieves the S3 bucket name from AWS SSM.
+   - Reuses the existing bucket, DynamoDB table, and key pairs without duplication.
 
 ### Cleanup
 
@@ -136,15 +145,15 @@ To destroy resources and clean up:
 
 ## Important Notes
 
-- **Dynamic Naming**: Resources are named using a unique identifier (`run_id`) to prevent conflicts.
-- **State Management**: Terraform state is stored in an S3 bucket with locking enabled via DynamoDB.
-- **Key Pairs**: The EC2 key pairs are securely generated and stored in the current working directory during the pipeline run.
+- **State Management**: Terraform state is stored in a dynamically created S3 bucket with locking enabled via DynamoDB.
+- **Resource Reuse**: The pipeline ensures existing resources are reused to avoid duplication.
+- **Key Pairs**: EC2 key pairs are created only if they don’t already exist, simplifying management.
 
 ---
 
 ## Troubleshooting
 
-- **Duplicate Resources**: Ensure the `run_id` remains consistent across runs to avoid duplicates.
+- **Duplicate Resources**: Ensure the SSM parameter `/my-terraform/s3-bucket-name` exists and stores the correct bucket name.
 - **Pipeline Errors**: Check GitHub Actions logs for detailed error messages.
 - **Manual Cleanup**: If needed, manually delete the S3 bucket, DynamoDB table, and key pairs using the AWS CLI.
 
