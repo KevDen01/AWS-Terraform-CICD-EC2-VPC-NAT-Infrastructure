@@ -135,7 +135,7 @@ jobs:
           BUCKET_NAME=$(aws ssm get-parameter --name /my-terraform/s3-bucket-name --query 'Parameter.Value' --output text)
           TABLE_NAME="my-terraform-lock-table"
 
-          cat <<EOF > backend.tf
+          cat <<EOF > src/backend.tf
           terraform {
             backend "s3" {
               bucket         = "$BUCKET_NAME"
@@ -151,6 +151,7 @@ jobs:
           echo "Generated backend.tf with S3 bucket $BUCKET_NAME and DynamoDB table $TABLE_NAME."
 
 
+
       # Step 8: Set up Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -159,10 +160,7 @@ jobs:
 
       # Step 9: Initialize Terraform
       - name: Terraform Init
-        run: terraform init \
-          -backend-config="bucket=$bucket_name" \
-          -backend-config="key=terraform/state.tfstate" \
-          -backend-config="region=us-west-2"
+        run: terraform init
 
 
       # Step 10: Terraform Plan
