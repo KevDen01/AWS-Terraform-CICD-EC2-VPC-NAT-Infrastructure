@@ -131,11 +131,14 @@ jobs:
 
       # Step 7: Generate Updated Backend
       - name: Generate Backend Configuration
+        working-directory: src
         run: |
+          # Retrieve the S3 bucket name from SSM Parameter Store
           BUCKET_NAME=$(aws ssm get-parameter --name /my-terraform/s3-bucket-name --query 'Parameter.Value' --output text)
           TABLE_NAME="my-terraform-lock-table"
 
-          cat <<EOF > src/backend.tf
+          # Generate backend.tf with the correct bucket and table names
+          cat <<EOF > backend.tf
           terraform {
             backend "s3" {
               bucket         = "$BUCKET_NAME"
@@ -149,6 +152,7 @@ jobs:
           EOF
 
           echo "Generated backend.tf with S3 bucket $BUCKET_NAME and DynamoDB table $TABLE_NAME."
+
 
 
 
