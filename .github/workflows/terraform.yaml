@@ -171,55 +171,55 @@ jobs:
       - name: Terraform Plan
         run: terraform plan
 
-      # Step 11: Terraform Apply
-      - name: Terraform Apply
-        if: github.event_name == 'push'
-        run: terraform apply -auto-approve
+      # # Step 11: Terraform Apply
+      # - name: Terraform Apply
+      #   if: github.event_name == 'push'
+      #   run: terraform apply -auto-approve
 
-      # # Step 12: Terraform Destroy
-      # - name: Terraform Destroy
-      #   working-directory: src
-      #   run: terraform destroy --auto-approve
-
-
-      # # Step 13: Empty and Delete S3 Bucket
-      # - name: Empty and Delete S3 Bucket
-      #   run: |
-      #     PARAM_NAME="/my-terraform/s3-bucket-name"
-      #     BUCKET_NAME=$(aws ssm get-parameter --name $PARAM_NAME --query 'Parameter.Value' --output text)
-
-      #     echo "Emptying S3 bucket: $BUCKET_NAME..."
-      #     aws s3 rm s3://$BUCKET_NAME --recursive
-
-      #     echo "Deleting S3 bucket: $BUCKET_NAME..."
-      #     aws s3api delete-bucket --bucket $BUCKET_NAME --region us-west-2
-
-      #     echo "Deleting SSM parameter: $PARAM_NAME..."
-      #     aws ssm delete-parameter --name $PARAM_NAME
+      # Step 12: Terraform Destroy
+      - name: Terraform Destroy
+        working-directory: src
+        run: terraform destroy --auto-approve
 
 
+      # Step 13: Empty and Delete S3 Bucket
+      - name: Empty and Delete S3 Bucket
+        run: |
+          PARAM_NAME="/my-terraform/s3-bucket-name"
+          BUCKET_NAME=$(aws ssm get-parameter --name $PARAM_NAME --query 'Parameter.Value' --output text)
 
-      # # Step 14: Delete DynamoDB Table
-      # - name: Delete DynamoDB Table
-      #   run: |
-      #     TABLE_NAME="my-terraform-lock-table"
+          echo "Emptying S3 bucket: $BUCKET_NAME..."
+          aws s3 rm s3://$BUCKET_NAME --recursive
 
-      #     echo "Deleting DynamoDB table: $TABLE_NAME..."
-      #     aws dynamodb delete-table --table-name $TABLE_NAME --region us-west-2
+          echo "Deleting S3 bucket: $BUCKET_NAME..."
+          aws s3api delete-bucket --bucket $BUCKET_NAME --region us-west-2
+
+          echo "Deleting SSM parameter: $PARAM_NAME..."
+          aws ssm delete-parameter --name $PARAM_NAME
 
 
-      # # Step 15: Delete EC2 Key Pairs
-      # - name: Delete EC2 Key Pairs
-      #   run: |
-      #     PRIVATE_KEY_NAME="key-ec2-private"
-      #     PUBLIC_KEY_NAME="key-ec2-public"
 
-      #     # Delete private key pair
-      #     echo "Deleting key pair: $PRIVATE_KEY_NAME..."
-      #     aws ec2 delete-key-pair --key-name $PRIVATE_KEY_NAME
+      # Step 14: Delete DynamoDB Table
+      - name: Delete DynamoDB Table
+        run: |
+          TABLE_NAME="my-terraform-lock-table"
 
-      #     # Delete public key pair
-      #     echo "Deleting key pair: $PUBLIC_KEY_NAME..."
-      #     aws ec2 delete-key-pair --key-name $PUBLIC_KEY_NAME
+          echo "Deleting DynamoDB table: $TABLE_NAME..."
+          aws dynamodb delete-table --table-name $TABLE_NAME --region us-west-2
+
+
+      # Step 15: Delete EC2 Key Pairs
+      - name: Delete EC2 Key Pairs
+        run: |
+          PRIVATE_KEY_NAME="key-ec2-private"
+          PUBLIC_KEY_NAME="key-ec2-public"
+
+          # Delete private key pair
+          echo "Deleting key pair: $PRIVATE_KEY_NAME..."
+          aws ec2 delete-key-pair --key-name $PRIVATE_KEY_NAME
+
+          # Delete public key pair
+          echo "Deleting key pair: $PUBLIC_KEY_NAME..."
+          aws ec2 delete-key-pair --key-name $PUBLIC_KEY_NAME
 
 
