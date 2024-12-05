@@ -105,6 +105,8 @@ To **destroy** the infrastructure:
        aws s3 rm s3://$BUCKET_NAME --recursive
        echo "Deleting S3 bucket: $BUCKET_NAME..."
        aws s3api delete-bucket --bucket $BUCKET_NAME --region us-west-2
+       echo "Deleting SSM parameter: $PARAM_NAME..."
+       aws ssm delete-parameter --name $PARAM_NAME
 
    # Step 14: Delete DynamoDB Table
    - name: Delete DynamoDB Table
